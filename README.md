@@ -1,804 +1,110 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Number Tapper</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:       #08090e;
-  --s1:       #0e1018;
-  --s2:       #13151f;
-  --tile:     #191c2a;
-  --tile-h:   #222640;
-  --tile-ok:  #0d2218;
-  --tile-lk:  #0e1020;
-  --tile-ht:  #2a1010;
-  --accent:   #5ee7df;
-  --acc2:     #f97171;
-  --acc3:     #ffd166;
-  --green:    #4ade98;
-  --muted:    #454870;
-  --border:   #1e2136;
-  --text:     #e0e4ff;
-  --t-px:     76px;
-  --gap:      5px;
-  --radius:   10px;
-  --trans:    cubic-bezier(.25,.8,.25,1);
-}
+# 🔢 Number Tapper
 
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow-x:hidden}
+<div align="center">
 
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Outfit', sans-serif;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 20px 12px 36px;
-  background-image:
-    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(94,231,223,.07) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 80% 90%, rgba(249,113,113,.05) 0%, transparent 70%);
-}
+![Number Tapper Banner](https://img.shields.io/badge/Puzzle-Sliding%20Game-5ee7df?style=for-the-badge)
+![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?style=for-the-badge&logo=javascript)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
-/* ── Header ─────────────────────────────────── */
-.header { text-align:center; margin-bottom:18px; }
-.logo {
-  font-size: clamp(2rem,6vw,3.4rem);
-  font-weight:900;
-  letter-spacing:-1px;
-  background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent;
-  line-height:1;
-}
-.tagline {
-  font-family:'JetBrains Mono',monospace;
-  font-size:.62rem; letter-spacing:3px; color:var(--muted);
-  text-transform:uppercase; margin-top:4px;
-}
+**A sleek, challenging sliding puzzle game with multiple difficulty modes, hints, undo, and leaderboards.**
 
-/* ── Difficulty ──────────────────────────────── */
-.diff-row {
-  display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; justify-content:center;
-}
-.db {
-  font-family:'JetBrains Mono',monospace; font-size:.6rem; letter-spacing:1.5px;
-  padding:6px 14px; border-radius:20px; border:1px solid var(--border);
-  background:var(--s2); color:var(--muted); cursor:pointer;
-  transition:all .2s var(--trans); text-transform:uppercase; user-select:none;
-}
-.db:hover{color:var(--text); border-color:var(--muted)}
-.db.on{border-color:var(--accent); color:var(--accent); box-shadow:0 0 16px rgba(94,231,223,.2)}
-.db.hard.on{border-color:var(--acc3); color:var(--acc3); box-shadow:0 0 16px rgba(255,209,102,.18)}
-.db.expert.on{border-color:#a78bfa; color:#a78bfa; box-shadow:0 0 16px rgba(167,139,250,.2)}
-.db.nightmare.on{border-color:var(--acc2); color:var(--acc2); box-shadow:0 0 16px rgba(249,113,113,.2)}
+[Play Now](https://your-username.github.io/number-tapper) · [Report Bug](issues-link) · [Request Feature](issues-link)
 
-/* ── Stats row ───────────────────────────────── */
-.stats {
-  display:flex; gap:20px; margin-bottom:12px;
-  font-family:'JetBrains Mono',monospace; font-size:.6rem;
-  color:var(--muted); text-transform:uppercase; letter-spacing:1px;
-}
-.stat{display:flex;flex-direction:column;align-items:center;gap:1px}
-.sv {
-  font-family:'Outfit',sans-serif; font-size:1.5rem; font-weight:900;
-  color:var(--accent); line-height:1;
-  transition:color .3s;
-}
-.sv.warn{color:var(--acc3)}
-.sv.danger{color:var(--acc2); animation:pulse 1s infinite}
-.sv.green{color:var(--green)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-
-/* ── Progress ────────────────────────────────── */
-.prog-wrap {
-  width:min(calc(var(--t-px)*var(--sz) + var(--gap)*(var(--sz) - 1) + 16px), 94vw);
-  height:3px; background:var(--border); border-radius:2px;
-  margin-bottom:12px; overflow:hidden;
-}
-.prog-fill {
-  height:100%; border-radius:2px;
-  background: linear-gradient(90deg, var(--accent), #a78bfa);
-  transition: width .4s var(--trans);
-}
-
-/* ── Board ───────────────────────────────────── */
-.board-wrap {
-  position:relative; margin-bottom:12px;
-}
-.board-glow {
-  position:absolute; inset:-1px; border-radius:14px;
-  background:linear-gradient(135deg,rgba(94,231,223,.18),rgba(167,139,250,.12));
-  filter:blur(8px); z-index:0;
-}
-#board {
-  position:relative; z-index:1;
-  display:grid;
-  gap:var(--gap);
-  padding:8px;
-  background:var(--s1);
-  border-radius:12px;
-  border:1px solid var(--border);
-}
-
-/* ── Tiles ───────────────────────────────────── */
-.tile {
-  width:var(--t-px); height:var(--t-px);
-  border-radius:var(--radius);
-  display:flex; align-items:center; justify-content:center;
-  font-weight:900; font-size:1.4rem;
-  cursor:pointer; user-select:none;
-  position:relative; overflow:hidden;
-  border:1px solid var(--border);
-  background:var(--tile);
-  color:var(--text);
-
-  /* SMOOTH: GPU-composited transform + opacity only */
-  will-change: transform, opacity;
-  transition:
-    transform   .18s var(--trans),
-    background  .18s,
-    border-color .18s,
-    box-shadow  .18s;
-}
-.tile::before {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(145deg,rgba(255,255,255,.07) 0%,transparent 55%);
-  border-radius:inherit;
-}
-.tile:hover:not(.empty):not(.locked){
-  background:var(--tile-h);
-  transform:scale(1.06) translateZ(0);
-  box-shadow:0 6px 28px rgba(94,231,223,.18);
-  border-color:rgba(94,231,223,.3);
-  z-index:2;
-}
-.tile:active:not(.empty):not(.locked){
-  transform:scale(.94) translateZ(0);
-}
-.tile.empty{
-  background:transparent; border:1.5px dashed rgba(255,255,255,.06);
-  cursor:default; pointer-events:none;
-}
-.tile.movable{
-  border-color:rgba(94,231,223,.25);
-}
-.tile.correct{
-  background:var(--tile-ok);
-  border-color:rgba(78,222,152,.35);
-  color:var(--green);
-}
-.tile.locked{
-  background:var(--tile-lk);
-  border-color:rgba(100,110,200,.2);
-  color:#6070a0; cursor:not-allowed;
-}
-.tile.hint-glow{
-  border-color:rgba(249,113,113,.7)!important;
-  box-shadow:0 0 20px rgba(249,113,113,.35)!important;
-}
-
-/* Slide animation - only translating, no layout shift */
-.tile.sliding {
-  transition:
-    transform .18s var(--trans),
-    background .18s,
-    border-color .18s;
-}
-
-.tile-pos-num {
-  position:absolute; bottom:3px; right:5px;
-  font-family:'JetBrains Mono',monospace; font-size:.4rem;
-  opacity:.18; letter-spacing:0;
-}
-.tile.correct .tile-pos-num{opacity:.35; color:var(--green)}
-
-/* ── Msg ─────────────────────────────────────── */
-.msg {
-  font-family:'JetBrains Mono',monospace; font-size:.68rem;
-  letter-spacing:1px; color:var(--accent);
-  min-height:16px; text-align:center; margin-bottom:8px;
-  transition:opacity .2s;
-}
-.msg.err{color:var(--acc2)}
-.msg.ok{color:var(--green)}
-
-/* ── Controls ────────────────────────────────── */
-.ctrl {
-  display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:18px;
-}
-.btn {
-  font-family:'JetBrains Mono',monospace; font-size:.65rem; letter-spacing:1px;
-  padding:9px 18px; border-radius:8px; border:1px solid var(--border);
-  background:var(--s2); color:var(--muted); cursor:pointer;
-  text-transform:uppercase;
-  transition:all .18s var(--trans);
-}
-.btn:hover{color:var(--text); border-color:var(--muted); background:var(--tile)}
-.btn.primary{background:var(--accent); color:#000; border-color:var(--accent); font-weight:700}
-.btn.primary:hover{background:#7af0ea; box-shadow:0 4px 20px rgba(94,231,223,.3)}
-.btn.hot{color:var(--acc2); border-color:rgba(249,113,113,.25)}
-.btn.hot:hover{background:rgba(249,113,113,.1); border-color:var(--acc2)}
-
-/* ── Scoreboard ──────────────────────────────── */
-.sb-wrap {
-  width:min(calc(var(--t-px)*var(--sz) + var(--gap)*(var(--sz)-1)+16px), 94vw);
-  background:var(--s1); border-radius:12px;
-  border:1px solid var(--border); overflow:hidden;
-}
-.sb-head {
-  display:flex; align-items:center; justify-content:space-between;
-  padding:10px 14px 8px;
-  border-bottom:1px solid var(--border);
-}
-.sb-title {
-  font-family:'JetBrains Mono',monospace; font-size:.65rem;
-  letter-spacing:2px; color:var(--muted); text-transform:uppercase;
-}
-.sb-tab {
-  display:flex; gap:4px;
-}
-.sb-tb {
-  font-family:'JetBrains Mono',monospace; font-size:.55rem; letter-spacing:1px;
-  padding:4px 10px; border-radius:4px; border:1px solid transparent;
-  background:transparent; color:var(--muted); cursor:pointer;
-  text-transform:uppercase; transition:.15s;
-}
-.sb-tb:hover{color:var(--text)}
-.sb-tb.on{background:var(--s2); border-color:var(--border); color:var(--accent)}
-
-.sb-body{max-height:220px; overflow-y:auto;}
-.sb-row {
-  display:grid; grid-template-columns:28px 1fr auto auto auto;
-  gap:8px; align-items:center;
-  padding:7px 14px;
-  border-bottom:1px solid rgba(255,255,255,.03);
-  font-size:.78rem;
-  transition:background .15s;
-}
-.sb-row:hover{background:var(--s2)}
-.sb-row:last-child{border-bottom:none}
-.sb-rank {
-  font-family:'JetBrains Mono',monospace; font-size:.7rem; font-weight:700;
-  color:var(--muted);
-}
-.sb-rank.gold  {color:#ffd700}
-.sb-rank.silver{color:#c0c0c0}
-.sb-rank.bronze{color:#cd7f32}
-.sb-diff{
-  font-family:'JetBrains Mono',monospace; font-size:.55rem; padding:2px 6px;
-  border-radius:3px; text-transform:uppercase; letter-spacing:1px;
-}
-.sb-diff.easy{background:rgba(94,231,223,.12); color:var(--accent)}
-.sb-diff.hard{background:rgba(255,209,102,.1); color:var(--acc3)}
-.sb-diff.expert{background:rgba(167,139,250,.1); color:#a78bfa}
-.sb-diff.nightmare{background:rgba(249,113,113,.1); color:var(--acc2)}
-.sb-moves{font-weight:700; color:var(--text); font-size:.82rem}
-.sb-time{font-family:'JetBrains Mono',monospace; color:var(--muted); font-size:.7rem}
-.sb-empty{padding:20px; text-align:center; color:var(--muted);
-  font-family:'JetBrains Mono',monospace; font-size:.65rem; letter-spacing:1px}
-
-/* ── Win overlay ─────────────────────────────── */
-#win {
-  position:fixed; inset:0; background:rgba(8,9,14,.92);
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:14px; z-index:100; opacity:0; pointer-events:none;
-  transition:opacity .35s;
-}
-#win.show{opacity:1; pointer-events:all}
-.win-badge {
-  font-size:4rem; animation:drop .5s var(--trans);
-}
-@keyframes drop{0%{transform:translateY(-40px) scale(.5);opacity:0}100%{transform:none;opacity:1}}
-.win-title {
-  font-size:clamp(2.5rem,8vw,4rem); font-weight:900;
-  background:linear-gradient(135deg,var(--accent),#a78bfa);
-  -webkit-background-clip:text; background-clip:text;
-  -webkit-text-fill-color:transparent;
-  letter-spacing:-1px;
-}
-.win-info {
-  font-family:'JetBrains Mono',monospace; font-size:.75rem;
-  color:var(--muted); letter-spacing:2px; text-align:center;
-  line-height:2;
-}
-.win-rank {
-  font-size:1.6rem; font-weight:900;
-  padding:6px 24px; border-radius:6px;
-  border:1px solid currentColor;
-}
-.win-rank.S{color:#ffd700; border-color:#ffd700; background:rgba(255,215,0,.08)}
-.win-rank.A{color:var(--green); border-color:var(--green); background:rgba(74,222,152,.08)}
-.win-rank.B{color:var(--accent); border-color:var(--accent); background:rgba(94,231,223,.08)}
-.win-rank.C{color:var(--muted); border-color:var(--muted)}
-
-/* ── Responsive ──────────────────────────────── */
-@media(max-width:500px){
-  :root{--t-px:54px; --gap:4px; --radius:8px}
-  .tile{font-size:1rem}
-}
-@media(max-width:370px){:root{--t-px:44px}}
-</style>
-</head>
-<body>
-
-<div class="header">
-  <div class="logo">Number Tapper</div>
-  <div class="tagline">College · Logic · Puzzle · Engine</div>
 </div>
 
-<!-- Difficulty -->
-<div class="diff-row">
-  <div class="db on"        onclick="setDiff('easy')">Easy</div>
-  <div class="db hard"      onclick="setDiff('hard')">Hard</div>
-  <div class="db expert"    onclick="setDiff('expert')">Expert</div>
-  <div class="db nightmare" onclick="setDiff('nightmare')">Nightmare</div>
-</div>
+---
 
-<!-- Stats -->
-<div class="stats">
-  <div class="stat"><div class="sv" id="svM">0</div>moves</div>
-  <div class="stat"><div class="sv" id="svT">0:00</div>time</div>
-  <div class="stat"><div class="sv" id="svH">5</div>hints</div>
-  <div class="stat"><div class="sv green" id="svP">0%</div>done</div>
-</div>
+## 📖 About
 
-<!-- Progress bar -->
-<div class="prog-wrap" id="progWrap"><div class="prog-fill" id="progFill" style="width:0"></div></div>
+Number Tapper is a modern take on the classic 15-puzzle (sliding puzzle) where you must arrange numbered tiles in ascending order by sliding them into the empty space. Features multiple difficulty levels, time pressure modes, locked tiles, and a persistent scoreboard.
 
-<!-- Board -->
-<div class="board-wrap">
-  <div class="board-glow"></div>
-  <div id="board"></div>
-</div>
+Built with vanilla HTML/CSS/JS — no frameworks, no dependencies, just smooth animations and clean code.
 
-<!-- Message -->
-<div class="msg" id="msg"> </div>
+---
 
-<!-- Controls -->
-<div class="ctrl">
-  <div class="btn hot"     id="btnH"  onclick="hint()">💡 Hint</div>
-  <div class="btn"         id="btnU"  onclick="undo()">↩ Undo</div>
-  <div class="btn"         id="btnPv" onclick="togglePreview()">👁 Preview</div>
-  <div class="btn primary"            onclick="newGame()">⟳ Shuffle</div>
-</div>
+## ✨ Features
 
-<!-- Scoreboard -->
-<div class="sb-wrap" id="sbWrap">
-  <div class="sb-head">
-    <div class="sb-title">🏆 Scoreboard</div>
-    <div class="sb-tab">
-      <div class="sb-tb on" onclick="filterSB('all')">All</div>
-      <div class="sb-tb"    onclick="filterSB('easy')">Easy</div>
-      <div class="sb-tb"    onclick="filterSB('hard')">Hard</div>
-      <div class="sb-tb"    onclick="filterSB('expert')">Expert</div>
-      <div class="sb-tb"    onclick="filterSB('nightmare')">Night</div>
-    </div>
-  </div>
-  <div class="sb-body" id="sbBody"></div>
-</div>
+| Feature | Description |
+|---------|-------------|
+| 🎮 **4 Difficulty Modes** | Easy (4x4), Hard (5x3 locks), Expert (6x5 locks + timer), Nightmare (7x8 locks + timer) |
+| 🔒 **Locked Tiles** | Strategic obstacles that cannot move — plan your route! |
+| ⏱️ **Timed Mode** | Race against the clock in Expert and Nightmare difficulties |
+| 💡 **Smart Hints** | Suggests the optimal next move using Manhattan distance heuristic |
+| ↩️ **Undo History** | Reverse up to 60 moves (perfect for learning) |
+| 👁️ **Preview Mode** | See where each tile needs to go (goal coordinates) |
+| 🏆 **Persistent Scoreboard** | Top 50 scores saved locally with difficulty filtering |
+| ⌨️ **Keyboard Support** | Arrow keys / WASD to control the empty space |
+| 📱 **Fully Responsive** | Plays beautifully on desktop, tablet, and mobile |
+| ✨ **Smooth Animations** | GPU-accelerated tile sliding with CSS transforms |
 
-<!-- Win overlay -->
-<div id="win">
-  <div class="win-badge" id="winBadge">🎉</div>
-  <div class="win-title">SOLVED!</div>
-  <div class="win-info" id="winInfo"></div>
-  <div class="win-rank" id="winRank">A-Rank</div>
-  <div style="display:flex;gap:10px;margin-top:6px">
-    <div class="btn" onclick="closeWin()">Close</div>
-    <div class="btn primary" onclick="newGame();closeWin()">Play Again</div>
-  </div>
-</div>
+---
 
-<script>
-// ══════════════════════════════════════════════
-// CONFIG
-// ══════════════════════════════════════════════
-const DIFFS = {
-  easy:      {size:4, depth:80,  locks:0, hints:5, time:0,   label:'Easy'},
-  hard:      {size:5, depth:200, locks:3, hints:3, time:0,   label:'Hard'},
-  expert:    {size:6, depth:400, locks:5, hints:2, time:300, label:'Expert'},
-  nightmare: {size:7, depth:600, locks:8, hints:1, time:180, label:'Nightmare'},
-};
+## 🎯 How to Play
 
-// ══════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════
-let diff='easy', cfg=DIFFS.easy;
-let board=[], goal=[], size=4, emptyIdx=0;
-let locked=new Set(), history=[];
-let moves=0, seconds=0, hintsLeft=5;
-let clockId=null, started=false, gameOver=false;
-let hintIdx=-1, previewOn=false;
-let timeLeft=0;
-let scores=JSON.parse(localStorage.getItem('nt_scores')||'[]');
-let sbFilter='all';
+1. **Objective**: Arrange tiles from 1 to N (where N = board size² - 1) in ascending order, left to right, top to bottom.
+2. **Rules**: 
+   - Only tiles adjacent to the empty space can slide into it
+   - Locked tiles (🔒) cannot move — work around them
+   - In timed modes, solve before the clock hits zero
+3. **Controls**:
+   - **Click** a tile to slide it toward the empty space
+   - **Arrow keys / WASD** to move the empty space (inverted logic for pro players)
+   - **Hint** button shows the best next move
+   - **Undo** reverses your last move
+   - **Preview** shows target coordinates on each tile
 
-// ══════════════════════════════════════════════
-// DIFFICULTY
-// ══════════════════════════════════════════════
-function setDiff(d){
-  diff=d; cfg=DIFFS[d];
-  document.querySelectorAll('.db').forEach(b=>b.classList.remove('on'));
-  document.querySelector(`.db.${d==='easy'?'on':d}`)?.classList.add('on');
-  // easier: just find by text
-  document.querySelectorAll('.db').forEach(b=>{
-    if(b.textContent.toLowerCase()===d) b.classList.add('on');
-  });
-  newGame();
-}
+---
 
-// ══════════════════════════════════════════════
-// NEW GAME
-// ══════════════════════════════════════════════
-function newGame(){
-  clearInterval(clockId);
-  size=cfg.size; moves=0; seconds=0; hintsLeft=cfg.hints;
-  started=false; gameOver=false; hintIdx=-1; previewOn=false;
-  history=[];
+## 🎮 Difficulty Modes
 
-  // CSS vars
-  document.documentElement.style.setProperty('--sz', size);
-  const px = size<=4?76:size<=5?66:size<=6?56:48;
-  document.documentElement.style.setProperty('--t-px', px+'px');
+| Mode | Size | Shuffle Depth | Locked Tiles | Hints | Timer | Target Audience |
+|------|------|---------------|--------------|-------|-------|-----------------|
+| 🟢 **Easy** | 4x4 | 80 | 0 | 5 | None | Beginners |
+| 🟡 **Hard** | 5x5 | 200 | 3 | 3 | None | Casual players |
+| 🟣 **Expert** | 6x6 | 400 | 5 | 2 | 5:00 | Puzzle enthusiasts |
+| 🔴 **Nightmare** | 7x7 | 600 | 8 | 1 | 3:00 | Masochists |
 
-  // Build goal & board
-  const n=size*size;
-  goal=[...Array(n-1).keys()].map(i=>i+1).concat([0]);
-  board=[...goal];
+**Ranking System**:
+- **S-Rank** 🏆: 0 hints used, moves < size × 20
+- **A-Rank** 🥇: 1 hint used
+- **B-Rank** 🥈: 2 hints used  
+- **C-Rank** 🥉: 3+ hints used
 
-  // Shuffle by random walks
-  let e=n-1, last=-1;
-  for(let i=0;i<cfg.depth;i++){
-    const nb=neighbors(e).filter(x=>x!==last);
-    const ch=nb[Math.random()*nb.length|0];
-    [board[e],board[ch]]=[board[ch],board[e]];
-    last=e; e=ch;
-  }
-  emptyIdx=e;
+---
 
-  // Locked tiles
-  locked=new Set();
-  if(cfg.locks){
-    const cands=[];
-    for(let i=0;i<n;i++) if(board[i]&&board[i]!==goal[i]) cands.push(i);
-    shuffle(cands);
-    cands.slice(0,cfg.locks).forEach(i=>locked.add(i));
-  }
+## 🛠️ Technical Details
 
-  // UI reset
-  setMsg('');
-  id('svM').textContent='0';
-  id('svT').textContent=cfg.time?fmt(cfg.time):'0:00';
-  id('svT').className='sv'+(cfg.time?' danger':'');
-  id('svH').textContent=hintsLeft;
-  id('btnPv').textContent='👁 Preview';
-  id('win').classList.remove('show');
+### Stack
+- **Pure HTML5** — Semantic structure
+- **CSS3** — CSS Grid, CSS Variables, GPU-accelerated transforms, responsive design
+- **Vanilla JavaScript ES6+** — No dependencies, ~400 lines of clean code
 
-  timeLeft=cfg.time;
-  if(cfg.time){ started=true; clockId=setInterval(tickDown,1000); }
+### Key Algorithms
+- **Manhattan Distance Heuristic** — Used for intelligent hints
+- **Random Walk Shuffling** — Ensures puzzle solvability (with depth parameter)
+- **Local Storage Persistence** — Scores saved across browser sessions
 
-  render();
-  updateStats();
-  updateSB();
-}
+### Performance Optimizations
+- `will-change: transform` for smooth animations
+- Tile recycling (no DOM thrashing on render)
+- Debounced animation queue to prevent move stacking
+- CSS transitions instead of JS animations
 
-// ══════════════════════════════════════════════
-// RENDER — uses CSS transform for smooth tile placement
-// ══════════════════════════════════════════════
-function render(){
-  const bd=id('board');
-  bd.style.gridTemplateColumns=`repeat(${size},var(--t-px))`;
-  bd.style.gridTemplateRows=`repeat(${size},var(--t-px))`;
+---
 
-  const nb=neighbors(emptyIdx);
-  const n=size*size;
+## 📦 Installation
 
-  // Build or reuse tiles
-  if(bd.children.length!==n){
-    bd.innerHTML='';
-    for(let i=0;i<n;i++){
-      const div=document.createElement('div');
-      div.className='tile';
-      div.dataset.idx=i;
-      const num=document.createElement('div');
-      num.className='tile-pos-num';
-      div.appendChild(num);
-      div.addEventListener('click',()=>clickTile(i));
-      bd.appendChild(div);
-    }
-  }
+```bash
+# Clone the repository
+git clone https://github.com/your-username/number-tapper.git
 
-  // Update each tile in-place (no re-create = no layout flash)
-  [...bd.children].forEach((div,i)=>{
-    const val=board[i];
-    const isEmpty=val===0;
-    const isLocked=locked.has(i)&&!isEmpty;
-    const isCorrect=!isEmpty&&val===goal[i];
-    const isMov=nb.includes(i)&&!isLocked;
-    const isHint=i===hintIdx;
+# Navigate to project
+cd number-tapper
 
-    let cls='tile';
-    if(isEmpty)  cls+=' empty';
-    if(isLocked) cls+=' locked';
-    if(isCorrect)cls+=' correct';
-    if(isMov)    cls+=' movable';
-    if(isHint)   cls+=' hint-glow';
-    div.className=cls;
+# Open in browser (any modern browser works)
+open index.html
 
-    // Text
-    const mainText=isEmpty?'':previewOn?(()=>{const gi=val-1;return `(${(gi/size|0)+1},${gi%size+1})`})():String(val);
-    // First text node
-    if(!div.firstChild||div.firstChild.nodeType!==3){
-      div.insertBefore(document.createTextNode(''),div.firstChild||div.querySelector('.tile-pos-num'));
-    }
-    div.firstChild.textContent=mainText;
-    div.querySelector('.tile-pos-num').textContent=isEmpty?'':('#'+val);
-
-    div.style.cursor=isEmpty||isLocked?'':'pointer';
-  });
-}
-
-// ══════════════════════════════════════════════
-// SMOOTH SLIDE — animates only the moving tile using transform
-// ══════════════════════════════════════════════
-function animateSlide(fromIdx, toIdx, callback){
-  const bd=id('board');
-  const tiles=[...bd.children];
-  const movingTile=tiles[fromIdx];
-
-  // Compute pixel offset
-  const px=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--t-px'));
-  const gap=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'))||5;
-  const step=px+gap;
-
-  const fr=fromIdx/size|0, fc=fromIdx%size;
-  const tr=toIdx/size|0,   tc=toIdx%size;
-  const dx=(tc-fc)*step, dy=(tr-fr)*step;
-
-  movingTile.classList.add('sliding');
-  movingTile.style.transform=`translate(${dx}px,${dy}px) translateZ(0)`;
-  movingTile.style.zIndex='10';
-
-  setTimeout(()=>{
-    movingTile.style.transform='';
-    movingTile.style.zIndex='';
-    movingTile.classList.remove('sliding');
-    callback();
-  }, 190);
-}
-
-// ══════════════════════════════════════════════
-// CLICK TILE
-// ══════════════════════════════════════════════
-let animating=false;
-function clickTile(idx){
-  if(animating||gameOver||board[idx]===0) return;
-  if(!neighbors(emptyIdx).includes(idx)){
-    setMsg('Only tiles next to the gap can slide!','err'); return;
-  }
-  if(locked.has(idx)){
-    setMsg('🔒 That tile is locked — route around it!','err'); return;
-  }
-
-  // Save undo snapshot BEFORE animation
-  history.push({board:[...board],emptyIdx,locked:new Set(locked)});
-  if(history.length>60) history.shift();
-
-  animating=true;
-  animateSlide(idx, emptyIdx, ()=>{
-    [board[emptyIdx],board[idx]]=[board[idx],board[emptyIdx]];
-    emptyIdx=idx;
-    moves++;
-    hintIdx=-1;
-    animating=false;
-
-    if(!started&&!cfg.time){
-      started=true;
-      clockId=setInterval(()=>{seconds++;id('svT').textContent=fmt(seconds);},1000);
-    }
-
-    setMsg('');
-    render();
-    updateStats();
-    if(isSolved()) onWin();
-  });
-}
-
-// ══════════════════════════════════════════════
-// UNDO
-// ══════════════════════════════════════════════
-function undo(){
-  if(animating||!history.length){setMsg('Nothing to undo!','err');return;}
-  const s=history.pop();
-  board=s.board; emptyIdx=s.emptyIdx; locked=s.locked;
-  moves=Math.max(0,moves-1);
-  hintIdx=-1;
-  render(); updateStats(); setMsg('↩ Undone');
-}
-
-// ══════════════════════════════════════════════
-// HINT
-// ══════════════════════════════════════════════
-function hint(){
-  if(hintsLeft<=0){setMsg('No hints remaining!','err');return;}
-  const nb=neighbors(emptyIdx).filter(i=>!locked.has(i));
-  if(!nb.length){setMsg('No valid moves!','err');return;}
-  const before=manhattan(board);
-  let best=Infinity,bi=-1;
-  nb.forEach(i=>{
-    const tmp=[...board];[tmp[emptyIdx],tmp[i]]=[tmp[i],tmp[emptyIdx]];
-    const s=manhattan(tmp);
-    if(s<best){best=s;bi=i;}
-  });
-  if(bi===-1) bi=nb[0];
-  hintsLeft--;
-  id('svH').textContent=hintsLeft;
-  hintIdx=bi;
-  const r=bi/size|0,c=bi%size;
-  setMsg(`💡 Slide tile ${board[bi]} at row ${r+1}, col ${c+1}`);
-  render();
-}
-
-function manhattan(b){
-  let d=0;
-  b.forEach((v,i)=>{
-    if(!v) return;
-    const gi=v-1;
-    d+=Math.abs((gi/size|0)-(i/size|0))+Math.abs(gi%size-i%size);
-  });
-  return d;
-}
-
-// ══════════════════════════════════════════════
-// PREVIEW
-// ══════════════════════════════════════════════
-function togglePreview(){
-  previewOn=!previewOn;
-  id('btnPv').textContent=previewOn?'✖ Hide':'👁 Preview';
-  render();
-  setMsg(previewOn?'Preview: tiles show goal (row,col)':'');
-}
-
-// ══════════════════════════════════════════════
-// TIMED MODE
-// ══════════════════════════════════════════════
-function tickDown(){
-  timeLeft--;
-  const sv=id('svT');
-  sv.textContent=fmt(timeLeft);
-  sv.className='sv'+(timeLeft<30?' danger':timeLeft<60?' warn':'');
-  if(timeLeft<=0){
-    clearInterval(clockId);
-    gameOver=true;
-    setMsg('⏰ TIME UP — Game over!','err');
-    setTimeout(()=>{
-      id('winBadge').textContent='⏰';
-      id('winInfo').innerHTML=`<b>Time's up!</b><br>${moves} moves · ${diff}`;
-      id('winRank').textContent='Try Again'; id('winRank').className='win-rank C';
-      id('win').classList.add('show');
-    },1200);
-  }
-}
-
-// ══════════════════════════════════════════════
-// WIN
-// ══════════════════════════════════════════════
-function isSolved(){ return board.every((v,i)=>v===goal[i]); }
-
-function onWin(){
-  clearInterval(clockId); gameOver=true;
-  const elapsed=cfg.time?(cfg.time-timeLeft):seconds;
-  const hintsUsed=cfg.hints-hintsLeft;
-  const rank=hintsUsed===0&&moves<size*20?'S':hintsUsed<=1?'A':hintsUsed<=2?'B':'C';
-  const badges={S:'🏆',A:'🥇',B:'🥈',C:'🥉'};
-
-  // Save score
-  scores.push({diff,moves,time:elapsed,rank,ts:Date.now()});
-  scores.sort((a,b)=>a.moves-b.moves);
-  if(scores.length>50) scores=scores.slice(0,50);
-  localStorage.setItem('nt_scores',JSON.stringify(scores));
-
-  setTimeout(()=>{
-    id('winBadge').textContent=badges[rank];
-    id('winInfo').innerHTML=
-      `${moves} moves &nbsp;·&nbsp; ${fmt(elapsed)} &nbsp;·&nbsp; ${cfg.label}<br>`+
-      `${hintsUsed}/${cfg.hints} hints used`;
-    id('winRank').textContent=rank+'-Rank';
-    id('winRank').className='win-rank '+rank;
-    id('win').classList.add('show');
-    updateSB();
-  },400);
-}
-function closeWin(){ id('win').classList.remove('show'); updateSB(); }
-
-// ══════════════════════════════════════════════
-// STATS
-// ══════════════════════════════════════════════
-function updateStats(){
-  const n=size*size;
-  const correct=board.reduce((a,v,i)=>a+(v&&v===goal[i]?1:0),0);
-  const pct=Math.round(correct/(n-1)*100);
-  id('svM').textContent=moves;
-  id('svP').textContent=pct+'%';
-  id('progFill').style.width=pct+'%';
-}
-
-// ══════════════════════════════════════════════
-// SCOREBOARD
-// ══════════════════════════════════════════════
-function filterSB(f){
-  sbFilter=f;
-  document.querySelectorAll('.sb-tb').forEach(b=>b.classList.remove('on'));
-  document.querySelectorAll('.sb-tb').forEach(b=>{
-    if(b.textContent.toLowerCase()===f||(f==='all'&&b.textContent==='All')) b.classList.add('on');
-  });
-  updateSB();
-}
-
-function updateSB(){
-  const bd=id('sbBody');
-  const filtered=sbFilter==='all'?scores:scores.filter(s=>s.diff===sbFilter);
-  const sorted=[...filtered].sort((a,b)=>a.moves-b.moves).slice(0,10);
-
-  if(!sorted.length){
-    bd.innerHTML='<div class="sb-empty">No scores yet — complete a puzzle!</div>';
-    return;
-  }
-
-  const rankMedals=['gold','silver','bronze'];
-  bd.innerHTML=sorted.map((s,i)=>{
-    const medalCls=rankMedals[i]||'';
-    const d=s.diff||'easy';
-    return `<div class="sb-row">
-      <div class="sb-rank ${medalCls}">${i<3?['🥇','🥈','🥉'][i]:'#'+(i+1)}</div>
-      <div class="sb-diff ${d}">${d}</div>
-      <div class="sb-moves">${s.moves} moves</div>
-      <div class="sb-time">${fmt(s.time||0)}</div>
-      <div class="sb-diff ${s.rank||'C'}" style="min-width:40px">${s.rank||'C'}-Rank</div>
-    </div>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════════════
-// HELPERS
-// ══════════════════════════════════════════════
-function neighbors(idx){
-  const r=idx/size|0,c=idx%size,nb=[];
-  if(r>0)       nb.push(idx-size);
-  if(r<size-1)  nb.push(idx+size);
-  if(c>0)       nb.push(idx-1);
-  if(c<size-1)  nb.push(idx+1);
-  return nb;
-}
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}}
-function fmt(s){const m=s/60|0;return `${m}:${(s%60).toString().padStart(2,'0')}`;}
-function setMsg(t,type=''){const m=id('msg');m.textContent=t||' ';m.className='msg'+(type?' '+type:'');}
-function id(x){return document.getElementById(x);}
-
-// ── Keyboard ─────────────────────────────────
-document.addEventListener('keydown',e=>{
-  const map={ArrowUp:'u',ArrowDown:'d',ArrowLeft:'l',ArrowRight:'r',w:'u',s:'d',a:'l',d:'r'};
-  const dir=map[e.key]; if(!dir) return; e.preventDefault();
-  const inv={u:'d',d:'u',l:'r',r:'l'};
-  const td=inv[dir];
-  const r=emptyIdx/size|0,c=emptyIdx%size;
-  let t=-1;
-  if(td==='u'&&r>0)      t=emptyIdx-size;
-  if(td==='d'&&r<size-1) t=emptyIdx+size;
-  if(td==='l'&&c>0)      t=emptyIdx-1;
-  if(td==='r'&&c<size-1) t=emptyIdx+1;
-  if(t!==-1) clickTile(t);
-});
-
-// START
-newGame();
-updateSB();
-</script>
-</body>
-</html>
+# Or serve locally
+python -m http.server 8000
+# Then visit http://localhost:8000
